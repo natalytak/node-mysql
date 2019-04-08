@@ -101,7 +101,6 @@ function addInventory() {
   }
 ])
   .then(function(answer) {
-      console.log(answer.ID, answer.quantity);
       var query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
     connection.query(query, { item_id: answer.ID }, function(err, res) {
       for (var i = 0; i < res.length; i++) {

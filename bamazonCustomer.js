@@ -52,36 +52,65 @@ var connection = mysql.createConnection({
   }
 ])
   .then(function(answer) {
-      console.log(answer.ID, answer.quantity);
-      console.log("Checking availability of the item...");
-
+    if (answer.ID === "" && answer.quantity === "") {
+      console.log(colors.cyan("Invalid ID and quantity. Please enter again."));
+      start();
+    } else if (answer.ID === "") {
+      console.log(colors.cyan("Invalid ID"));
+      start();
+    } else if (answer.quantity === "") {
+      console.log(colors.cyan("Invalid quantity"));
+      start();
+    } else {
       var query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
     connection.query(query, { item_id: answer.ID }, function(err, res) {
       for (var i = 0; i < res.length; i++) {
           var itemsLeft = res[i].stock_quantity;
-        console.log("Left: " + itemsLeft);
         if (itemsLeft >= answer.quantity) {
-        console.log(res[i].product_name + "(" + answer.quantity + "): successfully added to your shopping cart.");
+        console.log(res[i].product_name.blue.underline + "(" + answer.quantity.blue + "): successfully added to your shopping cart.");
         var cost = res[i].price * parseInt(answer.quantity);
-        console.log("Your total cost for this purchase is: $" + cost);
+        console.log(colors.red("Your total cost for this purchase is: $" + cost));
         var newQuantity = parseInt(itemsLeft) - parseInt(answer.quantity);
-        console.log(newQuantity);
+
+        var query = "UPDATE products SET ? WHERE ?";
+        connection.query(query, [{product_sales: cost}, {item_id: answer.ID}], function(error) {
+          if(error) throw err;
+        });
         var queryUPDATE = "UPDATE products SET ? WHERE ?";
     connection.query(queryUPDATE, [{stock_quantity: newQuantity},
     {item_id: answer.ID}], function(error) {
         if (error) throw err;
-        console.log("Updating our database...");
-        loadDatabase();
+        askAgain();
     })
         } else {
-            console.log("Insufficient quantity! Please choose a different item.");
+            console.log(colors.yellow("Insufficient quantity! Please choose a different item."));
             start();
         }
       }
-      // runSearch();
     });
-  });
 }
-
+function askAgain() {
+  inquirer
+  .prompt([
+    {
+    type: "list",
+    message: "What would you like to do now?",
+    name: "again",
+    choices: [
+      "Make Another purchase",
+      "EXIT"
+    ]
+  }
+])
+  .then(function(answer) {
+    if (answer.again === "Make Another purchase") {
+      loadDatabase();
+    } else if (answer.again === "EXIT") {
+      console.log(colors.bgWhite.red.bold("THANK YOU FOR SHOPPING WITH US!"));
+      connection.end();
+    }
+  }) 
+}
+})}
 //   start();
-//   connection.end();
+//   connection.end()
