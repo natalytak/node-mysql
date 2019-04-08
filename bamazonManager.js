@@ -27,7 +27,7 @@ var connection = mysql.createConnection({
               "View Low Inventory",
               "Add Inventory",
               "Add New Product",
-              "Exit"
+              "EXIT"
               ]
           })
           .then(function(answer) {
@@ -44,7 +44,7 @@ var connection = mysql.createConnection({
                 case "Add New Product":
                     addProduct();
                     break;
-                case "Exit":
+                case "EXIT":
                 connection.end();
                 break;
               }
@@ -101,6 +101,16 @@ function addInventory() {
   }
 ])
   .then(function(answer) {
+    if (answer.ID === "" && answer.quantity === "") {
+      console.log(colors.cyan("Invalid ID and quantity. Please enter again."));
+      addInventory();
+    } else if (answer.ID === "") {
+      console.log(colors.cyan("Invalid ID"));
+      addInventory();
+    } else if (answer.quantity === "") {
+      console.log(colors.cyan("Invalid quantity"));
+      addInventory();
+    } else {
       var query = "SELECT product_name, price, stock_quantity FROM products WHERE ?";
     connection.query(query, { item_id: answer.ID }, function(err, res) {
       for (var i = 0; i < res.length; i++) {
@@ -117,6 +127,7 @@ function addInventory() {
      }
     }
      )}
+  }
   )}
 
   function addProduct() {
@@ -151,6 +162,19 @@ function addInventory() {
     }
   ])
   .then(function(answer) {
+    if (answer.product === "" && answer.price === "" && answer.quantity === "") {
+      console.log(colors.cyan("Missing information about the product. Please enter again."));
+      addProduct();
+    } else if (answer.product === "") {
+      console.log(colors.cyan("Invalid product name"));
+      addProduct();
+    } else if (answer.price === "") {
+      console.log(colors.cyan("Invalid price"));
+      addProduct();
+    } else if (answer.quantity === "") {
+      console.log(colors.cyan("Invalid quantity"));
+      addProduct();
+    } else {
     // if (answer.department === "add new department") {
     //       addDepartment();
     // } else {
@@ -161,11 +185,12 @@ function addInventory() {
         department_name: answer.department,
         price: answer.price,
         stock_quantity: answer.quantity,
+        product_sales: 0
       }, function(err) {
             if (err) throw err;
-            console.log(colors.red("You added " + answer.product + " to the table."));
+            console.log(colors.red("You added " + answer.product + " to the list of products."));
             checkAction();
         })
        }
-      
-       )}
+  }
+)}

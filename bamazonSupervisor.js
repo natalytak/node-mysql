@@ -1,15 +1,5 @@
 const Table = require('cli-table');
 
-// console.table([
-//     {
-//       name: 'foo',
-//       age: 10
-//     }, {
-//       name: 'bar',
-//       age: 20
-//     }
-//   ]);
-
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var colors = require("colors");
@@ -25,8 +15,62 @@ var connection = mysql.createConnection({
   connection.connect(function(err) {
     if (err) throw err;
     // run the start function after the connection is made to prompt the user
-    loadDatabase();
+    checkAction();
   });
+
+  function checkAction() {
+    inquirer
+    .prompt({
+            name: "action",
+            type: "list",
+            message: "What would you like to do?",
+            choices: [
+            "View Product Sales by Department",
+            "Create New Department",
+            "EXIT"
+            ]
+        })
+        .then(function(answer) {
+            switch (answer.action) {
+              case "View Product Sales by Department":
+                  loadDatabase();
+                  break;
+              case "Create New Department":
+                  createDepartment();
+                  break;
+              case "EXIT":
+              connection.end();
+              break;
+            }
+        })
+}
+
+function createDepartment() {
+  console.log("Creating new department...".green);
+  inquirer
+    .prompt([
+      {
+      name: "department",
+      message: "What is the name of the NEW department you'd like to add?",
+      type: "input",
+    }
+  ])
+  .then(function(answer) {
+    // if (answer.department === "") {
+    //   console.log(colors.cyan("Invalid department name. Please enter again."));
+    //   createDepartment();
+    // } else {
+    //   var query = "INSERT INTO products SET ?";
+    //   connection.query(query, { 
+    //     department_name: answer.department,
+    //   }, function(err) {
+    //         if (err) throw err;
+    //         console.log(colors.red("You added " + answer.department + " to the list of products."));
+            checkAction();
+        })
+       }
+//   }
+// )}
 
   function loadDatabase() {
     connection.query("SELECT * FROM products", function(err, results) {
@@ -48,8 +92,9 @@ var connection = mysql.createConnection({
             );
             console.log(table.toString());
         }
-        // start();
+        checkAction();
         return results
       }
     });
-    })}
+    }
+    )}
